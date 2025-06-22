@@ -99,7 +99,7 @@ const CampaignParticipation = ({
     after?: string;
     before?: string;
   }) => {
-    const { state, operator, campaign, activity, location, organizations } =
+    const { state, status, operator, campaign, activity, location, organizations } =
       filter.config;
     setConfig({
       activity,
