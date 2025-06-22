@@ -41,7 +41,7 @@ const removeKey = (
           }
           return result;
         },
-        { operator: config.operator, state: config.state }
+        { operator: config.operator, state: config.state, status: config.status }
       )
     : config;
 };
@@ -71,6 +71,7 @@ const CampaignParticipation = ({
       operator: 'in',
       organizations: [orgId],
       state: 'booked',
+      status: 'attended',
     });
 
   const orgIds = useOrgIdsFromOrgScope(
@@ -101,6 +102,7 @@ const CampaignParticipation = ({
       operator,
       organizations,
       state,
+      status,
       ...range,
     });
   };
@@ -287,6 +289,27 @@ const CampaignParticipation = ({
                     {l.title}
                   </MenuItem>
                 ))}
+              </StyledSelect>
+            ),
+            statusSelect: (
+              <StyledSelect
+                onChange={(e) =>
+                  setConfig({
+                    ...filter.config,
+                    status: e.target.value as 'attended' | 'cancelled' | 'noshow',
+                  })
+                }
+                value={filter.config.status}
+              >
+                <MenuItem key="attended" value="attended">
+                  <Msg id={localMessageIds.statusSelect.attended} />
+                </MenuItem>
+                <MenuItem key="cancelled" value="cancelled">
+                  <Msg id={localMessageIds.statusSelect.cancelled} />
+                </MenuItem>
+                <MenuItem key="noshow" value="noshow">
+                  <Msg id={localMessageIds.statusSelect.noshow} />
+                </MenuItem>
               </StyledSelect>
             ),
             timeFrame: (

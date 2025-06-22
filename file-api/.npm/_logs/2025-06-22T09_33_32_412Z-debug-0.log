@@ -1,0 +1,19 @@
+0 verbose cli /Users/theozanchi/.nvm/versions/node/v22.14.0/bin/node /Users/theozanchi/.nvm/versions/node/v22.14.0/bin/npm
+1 info using npm@11.4.1
+2 info using node@v22.14.0
+3 silly config load:file:/Users/theozanchi/.nvm/versions/node/v22.14.0/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/theozanchi/LFI/app.zetkin.org/.npmrc
+5 silly config load:file:/Users/theozanchi/.npmrc
+6 warn Unknown user config "email". This will stop working in the next major version of npm.
+7 silly config load:file:/Users/theozanchi/.nvm/versions/node/v22.14.0/etc/npmrc
+8 verbose title npm config get prefix
+9 verbose argv "config" "get" "prefix"
+10 verbose logfile logs-max:10 dir:/Users/theozanchi/LFI/app.zetkin.org/file-api/.npm/_logs/2025-06-22T09_33_32_412Z-
+11 verbose logfile /Users/theozanchi/LFI/app.zetkin.org/file-api/.npm/_logs/2025-06-22T09_33_32_412Z-debug-0.log
+12 silly logfile done cleaning log files
+13 verbose cwd /Users/theozanchi/LFI/app.zetkin.org
+14 verbose os Darwin 24.5.0
+15 verbose node v22.14.0
+16 verbose npm  v11.4.1
+17 verbose exit 0
+18 info ok
