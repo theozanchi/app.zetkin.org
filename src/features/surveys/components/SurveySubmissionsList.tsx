@@ -1,13 +1,13 @@
 import { Box } from '@mui/system';
 import { Link } from '@mui/material';
-import { useRouter } from 'next/router';
 import {
   DataGridPro,
   GridCellParams,
+  GridColDef,
   GridRenderCellParams,
   useGridApiContext,
 } from '@mui/x-data-grid-pro';
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useContext, useEffect, useMemo, useState } from 'react';
 
 import messageIds from '../l10n/messageIds';
 import SurveyLinkDialog from './SurveyLinkDialog';
@@ -15,13 +15,20 @@ import SurveySubmissionPane from '../panes/SurveySubmissionPane';
 import { useNumericRouteParams } from 'core/hooks';
 import { usePanes } from 'utils/panes';
 import usePersonSearch from 'features/profile/hooks/usePersonSearch';
-import useSurveySubmission from '../hooks/useSurveySubmission';
+import useSurveySubmission, {
+  useSurveySubmissionResponder,
+} from '../hooks/useSurveySubmission';
+import ZUIEllipsisMenu from 'zui/ZUIEllipsisMenu';
 import ZUIPersonGridCell from 'zui/ZUIPersonGridCell';
 import ZUIPersonGridEditCell from 'zui/ZUIPersonGridEditCell';
 import ZUIPersonHoverCard from 'zui/ZUIPersonHoverCard';
 import ZUIRelativeTime from 'zui/ZUIRelativeTime';
+import ZUICreatePerson from 'zui/ZUICreatePerson';
+import { ZUIConfirmDialogContext } from 'zui/ZUIConfirmDialogProvider';
 import { Msg, useMessages } from 'core/i18n';
 import { ZetkinPerson, ZetkinSurveySubmission } from 'utils/types/zetkin';
+import ZUISnackbarContext from 'zui/ZUISnackbarContext';
+import useSurveySubmissionMutations from '../hooks/useSurveySubmissionMutations';
 
 const SurveySubmissionsList = ({
   submissions,
@@ -29,11 +36,21 @@ const SurveySubmissionsList = ({
   submissions: ZetkinSurveySubmission[];
 }) => {
   const messages = useMessages(messageIds);
-  const { orgId } = useRouter().query;
+  const { orgId } = useNumericRouteParams();
   const { openPane } = usePanes();
 
   const [dialogPerson, setDialogPerson] = useState<ZetkinPerson | null>(null);
   const [dialogEmail, setDialogEmail] = useState('');
+  const [createPersonOpen, setCreatePersonOpen] = useState<number>(-1);
+  const { setRespondentId } = useSurveySubmissionResponder(
+    orgId,
+    createPersonOpen
+  );
+  const { showSnackbar } = useContext(ZUISnackbarContext);
+  const { showConfirmDialog } = useContext(ZUIConfirmDialogContext);
+  const { deleteSurveySubmission } = useSurveySubmissionMutations(
+    Number(orgId)
+  );
 
   const sortedSubmissions = useMemo(() => {
     const sorted = [...submissions].sort((subOne, subTwo) => {
@@ -43,6 +60,14 @@ const SurveySubmissionsList = ({
     });
     return sorted;
   }, [submissions]);
+
+  async function handleDeleteSurveySubmission(
+    submissionId: number,
+    surveyId: number
+  ) {
+    await deleteSurveySubmission(submissionId, surveyId);
+    showSnackbar('success', <Msg id={messageIds.submissions.deleteSuccess} />);
+  }
 
   const makeSimpleColumn = (
     field: keyof NonNullable<ZetkinSurveySubmission['respondent']>,
@@ -87,7 +112,7 @@ const SurveySubmissionsList = ({
     };
   };
 
-  const gridColumns = [
+  const gridColumns: GridColDef<ZetkinSurveySubmission>[] = [
     makeSimpleColumn('first_name', 'firstNameColumn'),
     makeSimpleColumn('last_name', 'lastNameColumn'),
     makeSimpleColumn('email', 'emailColumn'),
@@ -124,6 +149,41 @@ const SurveySubmissionsList = ({
         return <EditCell row={params.row} />;
       },
       sortable: true,
+    },
+    {
+      align: 'right',
+      editable: false,
+      field: 'menu',
+      headerName: '',
+      renderCell: (
+        params: GridRenderCellParams<
+          ZetkinSurveySubmission,
+          ZetkinSurveySubmission['respondent']
+        >
+      ) => {
+        return (
+          <ZUIEllipsisMenu
+            items={[
+              {
+                label: messages.submissions.delete(),
+                onSelect: async (ev) => {
+                  ev.stopPropagation();
+                  showConfirmDialog({
+                    onSubmit: () =>
+                      handleDeleteSurveySubmission(
+                        params.row.id,
+                        params.row.survey.id
+                      ),
+                    title: messages.submissions.deleteTitle(),
+                    warningText: messages.submissions.deleteWarningText(),
+                  });
+                },
+              },
+            ]}
+          />
+        );
+      },
+      sortable: false,
     },
   ];
 
@@ -216,6 +276,7 @@ const SurveySubmissionsList = ({
     return (
       <ZUIPersonGridEditCell
         cell={row.respondent}
+        onCreate={() => setCreatePersonOpen(row.id)}
         onUpdate={updateCellValue}
         removePersonLabel={messages.submissions.unlink()}
         suggestedPeople={row.respondent === null ? [] : suggestedPeople} //filter anonymous
@@ -245,20 +306,33 @@ const SurveySubmissionsList = ({
             openPane({
               render() {
                 return (
-                  <SurveySubmissionPane
-                    id={params.row.id}
-                    orgId={parseInt(orgId as string)}
-                  />
+                  <SurveySubmissionPane id={params.row.id} orgId={orgId} />
                 );
               },
               width: 400,
             });
           }
         }}
+        pageSizeOptions={[100, 250, 500]}
+        pagination
         rows={sortedSubmissions}
         style={{
           border: 'none',
         }}
+      />
+      <ZUICreatePerson
+        onClose={() => {
+          setCreatePersonOpen(-1);
+        }}
+        onSubmit={(e, person) => {
+          if (createPersonOpen == -1) {
+            return;
+          }
+          setRespondentId(person.id);
+        }}
+        open={createPersonOpen != -1}
+        submitLabel={messages.submissions.createPersonSubmit()}
+        title={messages.submissions.createPersonTitle()}
       />
       {dialogPerson && (
         <SurveyLinkDialog

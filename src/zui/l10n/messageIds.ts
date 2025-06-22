@@ -116,6 +116,9 @@ export default makeMessages('zui', {
     }>('{date}'),
     singleDayToday: m('Today'),
   },
+  drawerModal: {
+    close: m('Close'),
+  },
   duration: {
     days: m<{ n: number }>('{n, plural, =1 {1 day} other {# days}}'),
     h: m<{ n: number }>('{n}h'),
@@ -142,6 +145,9 @@ export default makeMessages('zui', {
   expandableText: {
     showLess: m('Show less'),
     showMore: m('Show more'),
+  },
+  footer: {
+    privacyPolicy: m('Privacy policy'),
   },
   futures: {
     errorLoading: m('There was an error loading the data.'),
@@ -186,11 +192,29 @@ export default makeMessages('zui', {
     searchResults: m('Search results'),
   },
   personSelect: {
+    bulkAdd: {
+      backButton: m('Back'),
+      cancelButton: m('Cancel'),
+      confirmMessage: m<{ count: number; entityToAddTo?: string }>(
+        '{entityToAddTo, select, undefined {You are about to add {count, number, integer} people. Are you sure you want to continue?} other {You are about to add {count, number, integer} people to ‘{entityToAddTo}’. Are you sure you want to continue?}}'
+      ),
+      confirmTitle: m('Confirm adding people'),
+      fromView: m<{ viewTitle: string }>('From  ‘{viewTitle}’'),
+      openButton: m('Bulk add'),
+
+      submitButton: m<{ numSelected: number }>(
+        '{numSelected, plural, =0 {Select} =1 {Select 1 person} other {Select {numSelected, number, integer} people}}'
+      ),
+      title: m<{ entityToAddTo?: string }>(
+        '{entityToAddTo, select, undefined {Add people} other {Add people to ‘{entityToAddTo}’}}'
+      ),
+    },
     keepTyping: m('Keep typing to start searching'),
     noResult: m('No matching person found'),
     search: m('Type to start searching'),
     searching: m('Searching...'),
   },
+  privacyPolicyLink: m('https://zetkin.org/privacy'),
   publicFooter: {
     hostingOrganization: m<{ name: string }>(
       'This instance of Zetkin is hosted and managed by {name}.'
@@ -199,10 +223,14 @@ export default makeMessages('zui', {
       foundation: m('Zetkin Foundation'),
       privacy: m('Privacy Policy'),
     },
-    privacyPolicyLink: m('https://zetkin.org/privacy'),
     text: m(
       'Zetkin is a platform for organizing activism. Zetkin is developed by Zetkin Foundation, with a mission to work for radical change in society in a socialist, feminist, antiracist and sustainable direction.'
     ),
+  },
+  signUpChip: {
+    booked: m('You are booked'),
+    needed: m('You are needed'),
+    signedUp: m('You have signed up'),
   },
   snackbar: {
     error: m('Oh dear, something went wrong'),
@@ -227,30 +255,31 @@ export default makeMessages('zui', {
   },
   timeSpan: {
     multiDay: m<{
-      end: ReactElement;
-      endDate: ReactElement;
-      start: ReactElement;
-      startDate: ReactElement;
+      end: string | ReactElement;
+      endDate: string | ReactElement;
+      start: string | ReactElement;
+      startDate: string | ReactElement;
     }>('{startDate}, {start} - {endDate}, {end}'),
     multiDayEndsToday: m<{
-      end: ReactElement;
-      start: ReactElement;
-      startDate: ReactElement;
+      end: string | ReactElement;
+      start: string | ReactElement;
+      startDate: string | ReactElement;
     }>('{startDate}, {start} - Today, {end}'),
     multiDayToday: m<{
-      end: ReactElement;
-      endDate: ReactElement;
-      start: ReactElement;
+      end: string | ReactElement;
+      endDate: string | ReactElement;
+      start: string | ReactElement;
     }>('Today, {start} - {endDate}, {end}'),
     singleDay: m<{
-      date: ReactElement;
-      end: ReactElement;
-      start: ReactElement;
+      date: string | ReactElement;
+      end: string | ReactElement;
+      start: string | ReactElement;
     }>('{date}, {start} - {end}'),
     singleDayAllDay: m('All day today'),
-    singleDayToday: m<{ end: ReactElement; start: ReactElement }>(
-      'Today, {start} - {end}'
-    ),
+    singleDayToday: m<{
+      end: string | ReactElement;
+      start: string | ReactElement;
+    }>('Today, {start} - {end}'),
   },
   timeZonePicker: {
     gmt: m('GMT'),

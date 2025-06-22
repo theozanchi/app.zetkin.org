@@ -1,22 +1,25 @@
 import { FC } from 'react';
 import { Map, Person } from '@mui/icons-material';
 
-import ActivityListItem, { STATUS_COLORS } from './ActivityListItem';
+import { AreaAssignmentActivity } from 'features/campaigns/types';
+import ActivityListItem from './ActivityListItem';
 import useAreaAssignment from 'features/areaAssignments/hooks/useAreaAssignment';
-import useAreaAssignmentSessions from 'features/areaAssignments/hooks/useAreaAssignmentSessions';
+import useAreaAssignees from 'features/areaAssignments/hooks/useAreaAssignees';
 import getAreaAssignees from 'features/areaAssignments/utils/getAreaAssignees';
+import getStatusColor from 'features/campaigns/utils/getStatusColor';
 
 type Props = {
-  caId: string;
+  activity: AreaAssignmentActivity;
+  caId: number;
   orgId: number;
 };
 
-const AreaAssignmentListItem: FC<Props> = ({ caId, orgId }) => {
+const AreaAssignmentListItem: FC<Props> = ({ caId, orgId, activity }) => {
   const { data: assignment } = useAreaAssignment(orgId, caId);
 
-  const allSessions = useAreaAssignmentSessions(orgId, caId).data || [];
+  const allSessions = useAreaAssignees(orgId, caId).data || [];
   const sessions = allSessions.filter(
-    (session) => session.assignment.id === caId
+    (session) => session.assignment_id === caId
   );
 
   if (!assignment) {
@@ -24,14 +27,14 @@ const AreaAssignmentListItem: FC<Props> = ({ caId, orgId }) => {
   }
 
   const areaAssignees = getAreaAssignees(sessions);
-  const color = STATUS_COLORS.GREY;
+  const color = getStatusColor(activity.visibleFrom, activity.visibleUntil);
 
   return (
     <ActivityListItem
       color={color}
       endNumber={areaAssignees.length}
       href={`/organize/${orgId}/projects/${
-        assignment?.campaign?.id ?? 'standalone'
+        assignment?.project_id ?? 'standalone'
       }/areaassignments/${caId}`}
       PrimaryIcon={Map}
       SecondaryIcon={Person}

@@ -1,4 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Dayjs } from 'dayjs';
+import { DateRange } from '@mui/x-date-pickers-pro';
 
 import { TreeItemData } from './types';
 import {
@@ -14,8 +16,15 @@ import {
   ZetkinSubOrganization,
 } from 'utils/types/zetkin';
 
+type OrgEventFilters = {
+  customDatesToFilterBy: DateRange<Dayjs>;
+  dateFilterState: 'today' | 'tomorrow' | 'thisWeek' | 'custom' | null;
+  orgIdsToFilterBy: number[];
+};
+
 export interface OrganizationsStoreSlice {
   eventsByOrgId: Record<number, RemoteList<ZetkinEvent>>;
+  filters: OrgEventFilters;
   orgData: RemoteItem<ZetkinOrganization>;
   subOrgsByOrgId: Record<number, RemoteList<ZetkinSubOrganization>>;
   treeDataList: RemoteList<TreeItemData>;
@@ -24,6 +33,11 @@ export interface OrganizationsStoreSlice {
 
 const initialState: OrganizationsStoreSlice = {
   eventsByOrgId: {},
+  filters: {
+    customDatesToFilterBy: [null, null],
+    dateFilterState: null,
+    orgIdsToFilterBy: [],
+  },
   orgData: remoteItem(0),
   subOrgsByOrgId: {},
   treeDataList: remoteList(),
@@ -34,6 +48,13 @@ const OrganizationsSlice = createSlice({
   initialState,
   name: 'organizations',
   reducers: {
+    filtersUpdated: (
+      state,
+      action: PayloadAction<Partial<OrgEventFilters>>
+    ) => {
+      const updatedFilters = action.payload;
+      state.filters = { ...state.filters, ...updatedFilters };
+    },
     orgEventsLoad: (state, action: PayloadAction<number>) => {
       state.eventsByOrgId[action.payload] ||= remoteList();
       state.eventsByOrgId[action.payload].isLoading = true;
@@ -45,6 +66,43 @@ const OrganizationsSlice = createSlice({
       const [orgId, events] = action.payload;
       state.eventsByOrgId[orgId] = remoteList(events);
       state.eventsByOrgId[orgId].loaded = new Date().toISOString();
+    },
+    orgFollowed: (state, action: PayloadAction<ZetkinMembership>) => {
+      const membership = action.payload;
+
+      const existingMembership = state.userMembershipList.items.find(
+        (item) => item?.data?.organization.id === membership.organization.id
+      );
+
+      if (existingMembership?.data) {
+        existingMembership.data.follow = true;
+        existingMembership.loaded = new Date().toISOString();
+      } else {
+        const membershipWithId: ZetkinMembership & { id: number } = {
+          ...membership,
+          follow: true,
+          id: membership.organization.id,
+        };
+
+        state.userMembershipList.items.push(
+          remoteItem(membership.organization.id, {
+            data: membershipWithId,
+            loaded: new Date().toISOString(),
+          })
+        );
+      }
+    },
+    orgUnfollowed: (state, action: PayloadAction<number>) => {
+      const orgId = action.payload;
+
+      const membershipToUpdate = state.userMembershipList.items.find(
+        (membership) => membership.id === orgId
+      );
+
+      if (membershipToUpdate?.data) {
+        membershipToUpdate.data.follow = false;
+        membershipToUpdate.loaded = new Date().toISOString();
+      }
     },
     organizationLoad: (state) => {
       state.orgData.isLoading = true;
@@ -104,10 +162,13 @@ const OrganizationsSlice = createSlice({
 
 export default OrganizationsSlice;
 export const {
+  filtersUpdated,
   orgEventsLoad,
   orgEventsLoaded,
   organizationLoaded,
   organizationLoad,
+  orgFollowed,
+  orgUnfollowed,
   treeDataLoad,
   treeDataLoaded,
   subOrgsLoad,
