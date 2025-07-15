@@ -2,9 +2,10 @@ import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { FC, PropsWithChildren, useState } from 'react';
-import { deDE, daDK, svSE, nnNO } from '@mui/x-date-pickers/locales';
-import 'dayjs/locale/de';
+import { deDE, daDK, frFR, svSE, nnNO } from '@mui/x-date-pickers/locales';
 import 'dayjs/locale/da';
+import 'dayjs/locale/de';
+import 'dayjs/locale/fr';
 import 'dayjs/locale/nn';
 import 'dayjs/locale/sv';
 
@@ -18,6 +19,7 @@ const LocaleSwitcher: FC<PropsWithChildren> = ({ children }) => {
   > = {
     da: daDK.components.MuiLocalizationProvider.defaultProps.localeText,
     de: deDE.components.MuiLocalizationProvider.defaultProps.localeText,
+    fr: frFR.components.MuiLocalizationProvider.defaultProps.localeText,
     nn: nnNO.components.MuiLocalizationProvider.defaultProps.localeText,
     sv: svSE.components.MuiLocalizationProvider.defaultProps.localeText,
   };

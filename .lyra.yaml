@@ -9,6 +9,7 @@ projects:
     languages: # list of language codes supported in the project
       - da
       - de
+      - fr
       - en
       - nl
       - nn
