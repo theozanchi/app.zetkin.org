@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
         _id: 0,
         campId: 1,
         end_date: 1,
+        id: 1,
         orgId: 1,
         start_date: 1,
         title: 1,
@@ -48,7 +49,16 @@ export async function GET(request: NextRequest) {
         .lean()
         .exec();
 
-      return NextResponse.json({ data: assignments });
+      return NextResponse.json({
+        data: assignments.map((assignment) => ({
+          campaign: { id: assignment.campId },
+          end_date: assignment.end_date,
+          id: assignment.id,
+          organization: { id: assignment.orgId },
+          start_date: assignment.start_date,
+          title: assignment.title,
+        })),
+      });
     }
   );
 }
