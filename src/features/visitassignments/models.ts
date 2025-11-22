@@ -37,6 +37,20 @@ type ZetkinVisitAssignmentModelType = {
   title: string | null;
 };
 
+type ZetkinVisitResponseType = {
+  metricId: number;
+  response: string | number;
+};
+
+type ZetkinVisitModelType = {
+  assignmentId: number;
+  created: string;
+  creatorId: number;
+  id: number;
+  responses: ZetkinVisitResponseType[];
+  targetId: number;
+};
+
 // --- Counters ---
 
 const visitAssignmentCounterSchema = new mongoose.Schema({
@@ -69,6 +83,24 @@ const MetricCounter =
 const getNextMetricId = async () => {
   const counter = await MetricCounter.findOneAndUpdate(
     { _id: 'visitAssId' },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  return counter.seq;
+};
+
+const visitCounterSchema = new mongoose.Schema({
+  _id: { required: true, type: String },
+  seq: { default: 0, type: Number },
+});
+
+const VisitCounter =
+  mongoose.models.VisitCounter ||
+  mongoose.model('VisitCounter', visitCounterSchema);
+
+const getNextVisitId = async () => {
+  const counter = await VisitCounter.findOneAndUpdate(
+    { _id: 'visitId' },
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
@@ -130,6 +162,22 @@ visitAssignmentSchema.pre<ZetkinVisitAssignmentModelType>(
   }
 );
 
+const visitSchema = new mongoose.Schema<ZetkinVisitModelType>({
+  assignmentId: { required: true, type: Number },
+  created: { required: true, type: String },
+  creatorId: { required: true, type: Number },
+  id: { required: true, type: Number, unique: true },
+  responses: [{ type: mongoose.Schema.Types.Mixed }],
+  targetId: { required: true, type: Number },
+});
+
+visitSchema.pre<ZetkinVisitModelType>('validate', async function (next) {
+  if (!this.id) {
+    this.id = await getNextVisitId();
+  }
+  next();
+});
+
 // --- Mongoose models ---
 
 export const ZetkinMetricModel: mongoose.Model<ZetkinMetricModelType> =
@@ -149,3 +197,7 @@ export const VisitAssignmentModel: mongoose.Model<ZetkinVisitAssignmentModelType
     'VisitAssignment',
     visitAssignmentSchema
   );
+
+export const ZetkinVisitModel: mongoose.Model<ZetkinVisitModelType> =
+  mongoose.models.ZetkinVisit ||
+  mongoose.model<ZetkinVisitModelType>('ZetkinVisit', visitSchema);
