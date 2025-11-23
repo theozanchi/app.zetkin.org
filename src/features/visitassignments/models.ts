@@ -21,7 +21,7 @@ type ZetkinMetricModelType = {
   description: string;
   id: number;
   question: string;
-  type: 'bool' | 'scale5';
+  type: 'bool' | 'scale5' | 'freetext';
   visit_assignment_id: number;
 };
 
@@ -125,7 +125,7 @@ const zetkinMetricSchema = new mongoose.Schema<ZetkinMetricModelType>({
   description: { type: String },
   id: { required: true, type: Number, unique: true },
   question: { type: String },
-  type: { enum: ['bool', 'scale5'], required: true, type: String },
+  type: { enum: ['bool', 'scale5', 'freetext'], required: true, type: String },
   visit_assignment_id: { required: true, type: Number },
 });
 
